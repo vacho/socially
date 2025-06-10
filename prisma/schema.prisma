@@ -1,0 +1,126 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  username  String   @unique
+  clerkId   String   @unique
+  name      String?
+  bio       String?
+  image     String?
+  location  String?
+  website   String?
+  createdAt DateTime @default(now()) // member since 2025
+  updatedAt DateTime @updatedAt
+
+  // Relations:
+  posts     Post[] // One-to-many
+  comments  Comment[] // One-to-many
+  likes     Like[] // One-to-many
+
+  followers Follows[] @relation("following") // users who follow this user
+  following Follows[] @relation("follower") // users this user follows
+
+  notifications        Notification[] @relation("userNotifications") // notifications received by the user
+  notificationsCreated Notification[] @relation("notificationCreator") // notifications triggered by the user
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  authorId  String
+  content   String?
+  image     String?
+  //title     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  comments  Comment[]
+  likes     Like[]
+  notifications Notification[]
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  authorId  String
+  postId    String
+  content   String?
+  //title     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  notifications Notification[]
+
+  @@index([authorId, postId], name: "idx_comments_author_post") // composite index for faster queries
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  userId    String
+  postId    String?
+  createdAt DateTime @default(now())
+
+  // Relations
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([userId, postId]) // composote index for faster queries
+  @@unique([userId, postId]) // this prevents same user liking pos twice
+}
+
+model Follows {
+  followerId String
+  followingId String
+  createdAt DateTime @default(now())
+
+  // Relations
+  follower User @relation("follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@index([followerId, followingId], name: "idx_follows_follower_following") // composite index for faster queries
+  @@id([followerId, followingId]) // composite primary key to prevent duplicate follows
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  creatorId String // the user who triggered the notification
+  type      NotificationType // e.g., "like", "comment", "follow"
+  read      Boolean @default(false) // whether the notification has been read
+  postId    String? // optional, for notifications related to posts
+  commentId String? // optional, for notifications related to comments
+  createdAt DateTime @default(now())
+
+  // Relations
+  user      User     @relation("userNotifications", fields: [userId], references: [id], onDelete: Cascade)
+  creator   User     @relation("notificationCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  post      Post?    @relation(fields: [postId], references: [id], onDelete: Cascade)
+  comment   Comment? @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, createdAt]) // index for faster queries
+}
+
+enum NotificationType {
+  LIKE
+  COMMENT
+  FOLLOW
+}
