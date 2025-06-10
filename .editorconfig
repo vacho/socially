@@ -1,0 +1,54 @@
+# Top-most EditorConfig file
+root = true
+
+# All files
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+indent_style = space
+indent_size = 2
+trim_trailing_whitespace = true
+
+# Markdown files (e.g., README.md)
+[*.md]
+trim_trailing_whitespace = false
+
+# JSON files (e.g., package.json, tsconfig.json)
+[*.json]
+indent_style = space
+indent_size = 2
+
+# YAML files (e.g., .github workflows)
+[*.yml]
+indent_style = space
+indent_size = 2
+
+# TypeScript files
+[*.ts]
+indent_style = space
+indent_size = 2
+
+# TSX (React TypeScript)
+[*.tsx]
+indent_style = space
+indent_size = 2
+
+# JavaScript files
+[*.js]
+indent_style = space
+indent_size = 2
+
+# JSX (React JS)
+[*.jsx]
+indent_style = space
+indent_size = 2
+
+# CSS, SCSS, Tailwind
+[*.css]
+indent_style = space
+indent_size = 2
+
+[*.scss]
+indent_style = space
+indent_size = 2
