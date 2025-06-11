@@ -2,6 +2,7 @@
 
 import prisma from "@/lib/prisma";
 import { auth, currentUser } from "@clerk/nextjs/server";
+import { get } from "http";
 
 export async function syncUser() {
   try {
@@ -61,4 +62,18 @@ export async function getUserByClerkId(clerkId: string) {
     console.error("Error fetching user by Clerk ID:", error);
     return null;
   }
+}
+
+export async function getDbUserId() {
+  const { userId:clerkId } = await auth();
+  if (!clerkId) {
+    console.error("No user is authenticated");
+    return null;
+  }
+  const user = await getUserByClerkId(clerkId);
+  if (!user) {
+    console.error("User not found in the database");
+    return null;
+  }
+  return user.id;
 }
