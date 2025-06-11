@@ -39,3 +39,26 @@ export async function syncUser() {
     return;
   }
 }
+
+export async function getUserByClerkId(clerkId: string) {
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        clerkId,
+      },
+      include: {
+        _count: {
+          select: {
+            followers: true, // Include follower count if needed
+            following: true, // Include following count if needed
+            posts: true, // Include post count if needed
+          },
+        },
+      },
+    });
+    return user;
+  } catch (error) {
+    console.error("Error fetching user by Clerk ID:", error);
+    return null;
+  }
+}
