@@ -67,15 +67,14 @@ export async function getUserByClerkId(clerkId: string) {
 
 export async function getDbUserId() {
   const { userId:clerkId } = await auth();
-  if (!clerkId) {
-    console.error("No user is authenticated");
-    return null;
-  }
+  if (!clerkId) return null;
+  
   const user = await getUserByClerkId(clerkId);
   if (!user) {
     console.error("User not found in the database");
     return null;
   }
+  
   return user.id;
 }
 
@@ -85,7 +84,7 @@ export async function getRandomUsers() {
 
     if (!userId) {
       console.error("No userId found");
-      return null;
+      return [];
     }
 
     // get 3 random users from the database excluding the current user
